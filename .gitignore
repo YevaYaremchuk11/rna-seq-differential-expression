@@ -1,0 +1,12 @@
+# Downloaded GEO input files
+*.txt.gz
+*.txt
+
+# Generated analysis outputs
+results/tables/*.csv
+results/tables/*.txt
+
+# R session files
+.Rhistory
+.RData
+.Rproj.user/

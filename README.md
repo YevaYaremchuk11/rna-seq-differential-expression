@@ -1,4 +1,16 @@
 # RNA-seq Differential Expression Analysis of GSE213111
+## Training background
+
+This project was developed based on the skills and methods learned during the **UBDS School** training in R and bioinformatics.
+
+The project demonstrates practical application of:
+- R programming for biological data analysis
+- RNA-seq data preprocessing
+- differential expression analysis with DESeq2
+- data visualization with ggplot2 and pheatmap
+- gene annotation with AnnotationDbi and org.Hs.eg.db
+- GO enrichment analysis with clusterProfiler
+
 
 This repository contains an RNA-seq analysis of the human endothelial inflammatory response using GEO dataset **GSE213111**.
 

@@ -11,7 +11,7 @@
 #   absolute log2 fold change >= 1
 
 # -----------------------------
-# 1. Packages
+# 1. Packages and output folders
 # -----------------------------
 
 library(BiocManager)
@@ -23,6 +23,9 @@ library(AnnotationDbi)
 library(org.Hs.eg.db)
 library(clusterProfiler)
 library(enrichplot)
+
+dir.create("figures", showWarnings = FALSE, recursive = TRUE)
+dir.create("results/tables", showWarnings = FALSE, recursive = TRUE)
 
 # -----------------------------
 # 2. Download GEO metadata
@@ -243,7 +246,7 @@ deg_plot <- deg_summary[, c(
 
 write.csv(
   deg_summary,
-  "DEG_summary.csv",
+  file.path("results/tables", "DEG_summary.csv"),
   row.names = FALSE
 )
 
@@ -258,7 +261,7 @@ names(all_results) <- contrasts
 # 8. DEG trajectory over time
 # -----------------------------
 
-ggplot(
+deg_trajectory_plot <- ggplot(
   deg_plot,
   aes(
     x = time,
@@ -275,6 +278,14 @@ ggplot(
     title = "Differentially expressed genes over time"
   ) +
   theme_minimal()
+
+ggsave(
+  "figures/DEG_over_time.png",
+  deg_trajectory_plot,
+  width = 8,
+  height = 5,
+  dpi = 300
+)
 
 # -----------------------------
 # 9. TNF 4h volcano plot
@@ -294,7 +305,7 @@ plot_data$significance[
     abs(plot_data$log2FoldChange) >= 1
 ] <- "DEG"
 
-ggplot(
+volcano_plot <- ggplot(
   plot_data,
   aes(
     x = log2FoldChange,
@@ -310,21 +321,37 @@ ggplot(
   ) +
   theme_minimal()
 
+ggsave(
+  "figures/volcano_TNF_4h.png",
+  volcano_plot,
+  width = 7,
+  height = 5,
+  dpi = 300
+)
+
 # -----------------------------
 # 10. PCA and heatmap QC
 # -----------------------------
 
 vsd <- vst(dds, blind = FALSE)
 
-plotPCA(
+pca_plot <- plotPCA(
   vsd,
   intgroup = c("treatment", "time")
+)
+
+ggsave(
+  "figures/PCA.png",
+  pca_plot,
+  width = 7,
+  height = 5,
+  dpi = 300
 )
 
 top_genes <- order(
   apply(assay(vsd), 1, var),
   decreasing = TRUE
-)[1:50]
+)[1:min(50, nrow(assay(vsd)))]
 
 heatmap_data <- assay(vsd)[top_genes, ]
 
@@ -337,7 +364,10 @@ pheatmap(
   annotation_col = annotation_col,
   show_rownames = FALSE,
   show_colnames = FALSE,
-  main = "Top 50 most variable genes"
+  main = "Top 50 most variable genes",
+  filename = "figures/heat.png",
+  width = 8,
+  height = 8
 )
 
 # -----------------------------
@@ -351,7 +381,6 @@ deg_TNF_4h <- res_TNF_4h[
 ]
 
 deg_TNF_4h_annotated <- as.data.frame(deg_TNF_4h)
-
 deg_TNF_4h_annotated$gene_symbol <- mapIds(
   org.Hs.eg.db,
   keys = rownames(deg_TNF_4h_annotated),
@@ -366,7 +395,7 @@ deg_TNF_4h_annotated <- deg_TNF_4h_annotated[
 
 write.csv(
   deg_TNF_4h_annotated,
-  "DEGs_TNF_4h_vs_Sham_0min_annotated.csv"
+  file.path("results/tables", "DEGs_TNF_4h_vs_Sham_0min_annotated.csv")
 )
 
 # -----------------------------
@@ -421,7 +450,6 @@ ego_IFNgamma_4h <- enrichGO(
 genes_TNF_IFNgamma_4h <- get_gene_symbols(
   deg_results[["group_TNF.IFNgamma_4h_vs_Sham_0min"]]
 )
-
 ego_TNF_IFNgamma_4h <- enrichGO(
   gene = genes_TNF_IFNgamma_4h,
   OrgDb = org.Hs.eg.db,
@@ -436,20 +464,45 @@ ego_TNF_IFNgamma_4h <- enrichGO(
 # Save GO tables.
 write.csv(
   as.data.frame(ego_TNF_4h),
-  "GO_TNF_4h.csv",
+  file.path("results/tables", "GO_TNF_4h.csv"),
   row.names = FALSE
 )
 
 write.csv(
   as.data.frame(ego_IFNgamma_4h),
-  "GO_IFNgamma_4h.csv",
+  file.path("results/tables", "GO_IFNgamma_4h.csv"),
   row.names = FALSE
 )
 
 write.csv(
   as.data.frame(ego_TNF_IFNgamma_4h),
-  "GO_TNF_IFNgamma_4h.csv",
+  file.path("results/tables", "GO_TNF_IFNgamma_4h.csv"),
   row.names = FALSE
+)
+
+# Save GO dot plots.
+ggsave(
+  "figures/GO_TNF_4h.png",
+  dotplot(ego_TNF_4h, showCategory = 15) + ggtitle("GO enrichment: TNF 4h"),
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+
+ggsave(
+  "figures/GO_IFNgamma_4h.png",
+  dotplot(ego_IFNgamma_4h, showCategory = 15) + ggtitle("GO enrichment: IFNgamma 4h"),
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+
+ggsave(
+  "figures/GO_TNF_IFNgamma_4h.png",
+  dotplot(ego_TNF_IFNgamma_4h, showCategory = 15) + ggtitle("GO enrichment: TNF + IFNgamma 4h"),
+  width = 8,
+  height = 6,
+  dpi = 300
 )
 
 # -----------------------------
@@ -491,34 +544,41 @@ go_common_4h <- go_common_4h[
 
 write.csv(
   go_common_4h,
-  "GO_shared_4h.csv",
+  file.path("results/tables", "GO_shared_4h.csv"),
   row.names = FALSE
 )
 
 # Heatmap of the 20 strongest shared GO processes.
-go_top20 <- go_common_4h[1:20, ]
+if (nrow(go_common_4h) > 0) {
+  go_top20 <- go_common_4h[
+    seq_len(min(20, nrow(go_common_4h))),
+  ]
 
-heatmap_go <- go_top20[, c(
-  "FoldEnrichment_TNF",
-  "FoldEnrichment_IFNgamma",
-  "FoldEnrichment"
-)]
+  heatmap_go <- go_top20[, c(
+    "FoldEnrichment_TNF",
+    "FoldEnrichment_IFNgamma",
+    "FoldEnrichment"
+  )]
 
-colnames(heatmap_go) <- c(
-  "TNF",
-  "IFNgamma",
-  "TNF+IFNgamma"
-)
+  colnames(heatmap_go) <- c(
+    "TNF",
+    "IFNgamma",
+    "TNF+IFNgamma"
+  )
 
-rownames(heatmap_go) <- go_top20$Description
+  rownames(heatmap_go) <- go_top20$Description
 
-pheatmap(
-  heatmap_go,
-  scale = "none",
-  cluster_rows = TRUE,
-  cluster_cols = FALSE,
-  main = "Shared GO enrichment at 4h"
-)
+  pheatmap(
+    heatmap_go,
+    scale = "none",
+    cluster_rows = TRUE,
+    cluster_cols = FALSE,
+    main = "Shared GO enrichment at 4h",
+    filename = "figures/GO_shared_4h.png",
+    width = 9,
+    height = 8
+  )
+}
 
 # -----------------------------
 # 14. Top genes at 4h
@@ -539,7 +599,8 @@ top_genes_4h <- lapply(
         abs(res$log2FoldChange) >= 1,
     ]
 
-    res[order(res$padj), ][1:20, ]
+    res <- res[order(res$padj), ]
+    res[seq_len(min(20, nrow(res))), , drop = FALSE]
   }
 )
 
@@ -568,14 +629,20 @@ common_top_genes_4h <- Reduce(
   intersect,
   lapply(
     top_genes_4h_symbols,
-    function(x) x$gene_symbol
+    function(x) unique(na.omit(x$gene_symbol))
   )
 )
 
 write.csv(
   data.frame(gene_symbol = common_top_genes_4h),
-  "common_top20_genes_4h.csv",
+  file.path("results/tables", "common_top20_genes_4h.csv"),
   row.names = FALSE
+)
+
+# Save session information for reproducibility.
+writeLines(
+  capture.output(sessionInfo()),
+  file.path("results/tables", "sessionInfo.txt")
 )
 
 # End of analysis.

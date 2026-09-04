@@ -1,18 +1,16 @@
 # RNA-seq Differential Expression Analysis of GSE213111
 
-## Training background
+An independent R-based RNA-seq portfolio project investigating the transcriptional response of human endothelial cells to inflammatory cytokine stimulation.
 
-This project was developed based on the skills and methods learned during the **UBDS School** training in R and bioinformatics.
+## Project context
 
-The project demonstrates practical application of:
-- R programming for biological data analysis
-- RNA-seq data preprocessing
-- differential expression analysis with DESeq2
-- data visualization with ggplot2 and pheatmap
-- gene annotation with AnnotationDbi and org.Hs.eg.db
-- GO enrichment analysis with clusterProfiler
+This project was developed independently after training in R and bioinformatics at **UBDS School**. It applies methods practiced during the training to a public GEO dataset and documents a complete student-level RNA-seq analysis workflow.
 
-This repository contains an RNA-seq analysis of the human endothelial inflammatory response using GEO dataset **GSE213111**.
+The project is presented as a **student portfolio analysis**, not as a production bioinformatics pipeline. The focus is on reproducible analysis, visualization, and biological interpretation.
+
+## Research question
+
+How does cytokine stimulation affect gene expression in human endothelial cells over time, and which biological processes are associated with the response at 4 hours?
 
 ## Dataset
 
@@ -20,26 +18,22 @@ This repository contains an RNA-seq analysis of the human endothelial inflammato
 
 The dataset contains RNA-seq measurements from blood outgrowth endothelial cells exposed to TNF, IFNγ, TNF + IFNγ and Sham control across multiple time points.
 
-## Aim
-
-The aim was to identify differentially expressed genes following cytokine stimulation and characterize the biological processes associated with the transcriptional response, with particular focus on the 4-hour time point.
-
 ## Analysis workflow
 
-1. GEO metadata were retrieved with `GEOquery`.
-2. The supplementary RNA-seq count matrix was downloaded from GEO.
-3. Sample metadata were matched to the count matrix using GEO sample IDs.
-4. Genes with count ≥10 in at least 3 samples were retained.
-5. Differential expression analysis was performed with `DESeq2` using treatment-time group as the experimental factor.
-6. DEGs were defined as adjusted p-value < 0.05 and |log2 fold change| ≥ 1.
-7. PCA and a heatmap of the 50 most variable genes were used for quality assessment.
-8. Genes were annotated using `org.Hs.eg.db`.
-9. GO Biological Process enrichment was performed with `clusterProfiler`.
-10. Shared GO processes between TNF, IFNγ and TNF + IFNγ at 4 hours were compared.
+1. Retrieve sample metadata from GEO with `GEOquery`.
+2. Download the supplementary RNA-seq count matrix from GEO.
+3. Match sample metadata to count-matrix columns using GEO sample IDs.
+4. Filter genes with count ≥10 in at least 3 samples.
+5. Perform differential expression analysis with `DESeq2` using a treatment-time group factor.
+6. Define DEGs using adjusted p-value < 0.05 and |log2 fold change| ≥ 1.
+7. Inspect sample structure using PCA and a heatmap of the 50 most variable genes.
+8. Annotate Ensembl gene IDs with `org.Hs.eg.db`.
+9. Perform GO Biological Process enrichment with `clusterProfiler`.
+10. Compare enriched processes across TNF, IFNγ and TNF + IFNγ at 4 hours.
 
 ## Results
 
-At 4 hours:
+At 4 hours, cytokine stimulation produced substantial transcriptional changes:
 
 | Comparison | DEGs | Upregulated | Downregulated |
 |---|---:|---:|---:|
@@ -47,15 +41,15 @@ At 4 hours:
 | IFNγ vs Sham | 1094 | 718 | 376 |
 | TNF + IFNγ vs Sham | 2057 | 1209 | 848 |
 
-The TNF 4-hour comparison showed strong induction of inflammatory endothelial genes including **VCAM1**, **ICAM1**, **CX3CL1**, **LTB**, **TNFAIP3**, **TNFAIP2**, **NFKBIA** and **IRF1**.
+The TNF 4-hour comparison included inflammatory endothelial genes such as **VCAM1**, **ICAM1**, **CX3CL1**, **LTB**, **TNFAIP3**, **TNFAIP2**, **NFKBIA** and **IRF1**.
 
-GO enrichment highlighted antiviral/innate immune responses, cytokine production, chemotaxis and canonical NF-κB signaling. IFNγ showed particularly strong interferon-associated and antiviral programs, while the combined TNF + IFNγ condition showed a broad inflammatory and innate immune response.
+GO enrichment highlighted inflammatory, innate immune, cytokine, chemotaxis and interferon-associated transcriptional programs. The combined TNF + IFNγ condition showed a broad response across these processes.
 
-Terms such as `response to virus` and `response to lipopolysaccharide` represent shared transcriptional programs and do not indicate direct exposure to viruses or bacterial products.
+Terms such as `response to virus` and `response to lipopolysaccharide` were interpreted as shared transcriptional programs rather than evidence of direct exposure to viruses or bacterial products.
 
-## Quality control
+## Quality assessment
 
-PCA showed separation of samples according to treatment and time, with replicates generally clustering closely. The heatmap of the 50 most variable genes showed patterns consistent with the PCA.
+PCA showed separation of samples by treatment and time, while biological replicates generally clustered together. The heatmap of the most variable genes showed patterns broadly consistent with the PCA structure.
 
 ## Figures
 
@@ -92,30 +86,46 @@ PCA showed separation of samples according to treatment and time, with replicate
 ```text
 rna-seq-differential-expression/
 ├── README.md
+├── .gitignore
 ├── scripts/
 │   └── analysis.R
-└── figures/
-    ├── DEG_over_time.png
-    ├── PCA.png
-    ├── heat.png
-    ├── volcano_TNF_4h.png
-    ├── GO_TNF_4h.png
-    ├── GO_IFNgamma_4h.png
-    ├── GO_TNF_IFNgamma_4h.png
-    └── GO_shared_4h.png
+├── figures/
+│   ├── DEG_over_time.png
+│   ├── PCA.png
+│   ├── heat.png
+│   ├── volcano_TNF_4h.png
+│   ├── GO_TNF_4h.png
+│   ├── GO_IFNgamma_4h.png
+│   ├── GO_TNF_IFNgamma_4h.png
+│   └── GO_shared_4h.png
+└── results/
+    └── tables/
+        └── README.md
 ```
 
-## Main R packages
+## Main R / Bioconductor packages
 
-- GEOquery
-- DESeq2
-- ggplot2
-- pheatmap
-- AnnotationDbi
-- org.Hs.eg.db
-- clusterProfiler
-- enrichplot
+- `GEOquery`
+- `DESeq2`
+- `ggplot2`
+- `pheatmap`
+- `AnnotationDbi`
+- `org.Hs.eg.db`
+- `clusterProfiler`
+- `enrichplot`
 
 ## Reproducibility
 
-The analysis script contains the workflow from downloading GEO metadata and count data through differential expression and GO enrichment. Input count data are downloaded directly from GEO when the script is executed.
+The analysis script downloads the GEO metadata and supplementary count matrix when executed. It saves the main differential-expression and GO-enrichment tables, figures, and session information to the documented output locations.
+
+Downloaded input files and generated result tables are excluded from version control by `.gitignore`. The committed figures provide a visual record of the analysis results.
+
+To reproduce the analysis, install the packages listed above and run:
+
+```r
+source("scripts/analysis.R")
+```
+
+## Scope and limitations
+
+This is a student-level portfolio project based on a public dataset. The analysis focuses on differential expression, exploratory sample-level visualization, and GO enrichment. It uses a combined treatment-time factor rather than a more advanced multifactorial or interaction model. The results are therefore presented as an exploratory analysis of transcriptional responses rather than as a production-grade statistical pipeline.

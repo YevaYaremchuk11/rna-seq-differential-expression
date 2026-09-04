@@ -1,4 +1,5 @@
 # RNA-seq Differential Expression Analysis of GSE213111
+
 ## Training background
 
 This project was developed based on the skills and methods learned during the **UBDS School** training in R and bioinformatics.
@@ -10,7 +11,6 @@ The project demonstrates practical application of:
 - data visualization with ggplot2 and pheatmap
 - gene annotation with AnnotationDbi and org.Hs.eg.db
 - GO enrichment analysis with clusterProfiler
-
 
 This repository contains an RNA-seq analysis of the human endothelial inflammatory response using GEO dataset **GSE213111**.
 
@@ -69,7 +69,7 @@ PCA showed separation of samples according to treatment and time, with replicate
 
 ### Heatmap of the 50 most variable genes
 
-![Top 50 variable genes](figures/heatmap_top50.png)
+![Top 50 variable genes](figures/heat.png)
 
 ### TNF 4h volcano plot
 
@@ -97,7 +97,7 @@ rna-seq-differential-expression/
 └── figures/
     ├── DEG_over_time.png
     ├── PCA.png
-    ├── heatmap_top50.png
+    ├── heat.png
     ├── volcano_TNF_4h.png
     ├── GO_TNF_4h.png
     ├── GO_IFNgamma_4h.png
